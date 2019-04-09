@@ -8,7 +8,7 @@ import me.tony.spring.vertx.demo.verticle.VerticleDescriptor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static me.tony.spring.vertx.demo.verticle.VerticleDescriptor.PREFIX;
@@ -34,18 +34,16 @@ public class SpringVerticleFactory implements VerticleFactory {
     @Override
     public Verticle createVerticle(String verticleName, ClassLoader classLoader) {
         final var name = VerticleFactory.removePrefix(verticleName);
-        var opt = Optional.<Verticle>empty();
-        for (VerticleDescriptor descriptor : map.getOrDefault(name, Collections.emptyList())) {
-            try {
-                final var instance = descriptor.createVerticle();
-                if (instance != null) {
-                    opt = Optional.of(instance);
-                    break;
-                }
-            } catch (Exception ignored) {
-
-            }
-        }
-        return opt.orElseThrow(() -> new VertxException(String.format("create verticle for name: %s failed!", verticleName)));
+        return map.getOrDefault(name, Collections.emptyList()).stream()
+                .map(it -> {
+                    try {
+                        return it.createVerticle();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .dropWhile(Objects::isNull)
+                .findFirst()
+                .orElseThrow(() -> new VertxException(String.format("create verticle for name: %s failed!", verticleName)));
     }
 }
