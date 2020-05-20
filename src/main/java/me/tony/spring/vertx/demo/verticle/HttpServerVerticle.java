@@ -2,6 +2,7 @@ package me.tony.spring.vertx.demo.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.ext.web.Router;
 import me.tony.spring.vertx.demo.route.RouteInfo;
 
@@ -22,14 +23,14 @@ public class HttpServerVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void start(Future<Void> startFuture) {
+    public void start(Promise<Void> startPromise) {
         final var router = Router.router(vertx);
         Optional.ofNullable(routeInfos).ifPresent(infos -> infos.forEach(info -> RouteInfo.route(router, info)));
         vertx.createHttpServer().requestHandler(router).listen(port, ar -> {
             if (ar.succeeded()) {
-                startFuture.complete();
+                startPromise.complete();
             } else {
-                startFuture.fail(ar.cause());
+                startPromise.fail(ar.cause());
             }
         });
     }

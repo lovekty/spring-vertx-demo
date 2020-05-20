@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @author tony.zhuby
  */
-public interface SelfDeployVerticleDescriptor<T extends Verticle> extends VerticleDescriptor {
+public interface SelfDeployVerticleDescriptor<T extends Verticle> extends VerticleDescriptor<T> {
     /**
      * 是否worker verticle
      *
@@ -56,14 +56,18 @@ public interface SelfDeployVerticleDescriptor<T extends Verticle> extends Vertic
      */
     default void deploy(Vertx vertx) {
         final var options = new DeploymentOptions();
-        options.setWorker(isWorker());
-        if (isWorker() && instances() > 1) {
-            options.setInstances(instances());
+        final var isWorker = isWorker();
+        options.setWorker(isWorker);
+        final var instances = instances();
+        if (isWorker && instances > 1) {
+            options.setInstances(instances);
         }
-        if (isWorker() && StringUtils.isNotBlank(workerPoolName())) {
+        final var workerPoolName = workerPoolName();
+        if (isWorker && StringUtils.isNotBlank(workerPoolName)) {
             options.setWorkerPoolName(workerPoolName());
         }
-        if (isWorker() && StringUtils.isNotBlank(workerPoolName()) && workerPoolSize() > 0) {
+        final var workerPoolSize = workerPoolSize();
+        if (isWorker && StringUtils.isNotBlank(workerPoolName) && workerPoolSize > 0) {
             options.setWorkerPoolSize(workerPoolSize());
         }
         vertx.deployVerticle(PREFIX + ":" + verticleName(), options);

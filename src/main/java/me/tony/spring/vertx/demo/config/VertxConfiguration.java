@@ -63,7 +63,7 @@ public class VertxConfiguration {
             }
 
             @Override
-            public Verticle createVerticle() {
+            public ConsumerVerticle createVerticle() {
                 return new ConsumerVerticle();
             }
         };
